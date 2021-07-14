@@ -44,7 +44,7 @@ for row in cursor:
   if count == 1:
     oldest_title = f'{podcast}: {episode}'
     oldest_short = f'{podcast}: {filename}'
-    oldest_age = (datetime.now() - datetime.utcfromtimestamp(date)).days
+    oldest_age = (datetime.now() - datetime.fromtimestamp(date)).days
     oldest_length = length
 
   total_length += length

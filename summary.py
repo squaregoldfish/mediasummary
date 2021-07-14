@@ -4,6 +4,7 @@ import sqlite3
 import toml
 import subprocess
 import json
+from datetime import datetime
 
 DB_FILE = "mediasummary.sqlite"
 
@@ -17,22 +18,28 @@ def disconnect(db):
   db.close()
 
 def contains(db, full_name):
-  cursor = db.execute(f'SELECT full_name FROM summary WHERE full_name = "{full_name}"')
-  if cursor.rowcount == 1:
+  cursor = db.execute(f'SELECT full_name FROM summary WHERE full_name = ?', [full_name])
+  record = cursor.fetchone()
+  cursor.close()
+  if record is not None:
     return True
   else:
     return False
 
 def add(db, full_name, short_name, date, length, size):
-  db.execute(f'''
-    INSERT INTO summary (
-      "{full_name}",
-      "{short_name}",
-      "{date}",
-      "{length}",
-      "{size}",
-    )
-  ''')
+  db.execute('INSERT INTO summary VALUES (?, ?, ?, ?, ?)',
+    [full_name, short_name, date, length, size])
+  db.commit()
+
+def remove(db, full_name):
+  db.execute('DELETE FROM summary WHERE full_name = ?', [full_name])
+  db.commit()
+
+def get_all(db):
+  cursor = db.execute('SELECT full_name FROM summary');
+  records = cursor.fetchall()
+  cursor.close()
+  return records
 
 def create_db():
   if not os.path.isfile(DB_FILE):
@@ -49,6 +56,33 @@ def create_db():
     ''')
 
     db.close()
+
+def make_summary(db, name):
+
+  cursor = db.execute("SELECT COUNT(*) FROM summary")
+  count = cursor.fetchone()[0]
+  cursor.close()
+
+  cursor = db.execute("SELECT SUM(size) FROM summary")
+  size = cursor.fetchone()[0]
+  cursor.close()
+
+  cursor = db.execute("SELECT SUM(length) FROM summary")
+  length = cursor.fetchone()[0]
+  cursor.close()
+
+  cursor = db.execute("SELECT short_name, date, length FROM summary ORDER BY date ASC, short_name ASC")
+  oldest = cursor.fetchone()
+  cursor.close()
+
+  oldest_title = oldest[0]
+  oldest_short = oldest[0]
+  oldest_age = (datetime.now() - datetime.fromtimestamp(oldest[1])).days
+  oldest_length = oldest[2]
+
+  summary = manual_summary(count, size, length, oldest_title, oldest_short, oldest_length, oldest_age)
+  upload(summary, name)
+
 
 def manual_summary(count, total_size, total_length, oldest_title,
   oldest_short, oldest_length, oldest_age):

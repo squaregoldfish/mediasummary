@@ -37,7 +37,7 @@ else:
     seconds = data['length']
     hours = int(math.floor(seconds / 3600))
     minutes = int(math.floor(seconds % 3600 / 60))
-    time = ''.join([str(hours), ':', str(minutes)])
+    time = ':'.join([str(hours), '{0:02d}'.format(minutes)])
 
     # Size
     size = data['size']
@@ -45,9 +45,9 @@ else:
     gb = size / 1073742000
 
     if gb > 1:
-      size = '{0:.1f} G'.format(gb)
+      size = '{0:.1f}G'.format(gb)
     else:
-      size = '{0:.1f} M'.format(mb)
+      size = '{0:.1f}M'.format(mb)
 
     # Oldest age
     days = data['oldest']['age']
