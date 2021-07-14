@@ -127,3 +127,16 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# SQLite files
+**/*.sqlite
+
+# TOML files
+**/*.toml
+
+# Summary jsons
+**/*.json
+
+# Lametric symlinks
+podcasts.py
+videos.py
