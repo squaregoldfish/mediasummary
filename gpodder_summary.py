@@ -55,4 +55,7 @@ gpodder_db.close()
 result = summary.manual_summary(count, total_size, total_length, oldest_title,
   oldest_short, oldest_length, oldest_age)
 
+with open('oldest.txt', 'w') as f:
+  f.write(result['oldest']['short'])
+
 summary.upload(result, 'podcasts')
