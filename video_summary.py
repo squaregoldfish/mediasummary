@@ -20,29 +20,29 @@ db = summary.connect()
 # Add any new files
 for y in num_dir_list(dir):
   for m in num_dir_list(os.path.join(dir, y)):
-    folder = '{}/{}'.format(y, m)
-    for vid in os.listdir(os.path.join(dir, y, m)):
+    for d in num_dir_list(os.path.join(dir, y, m)):
+      folder = f'{y}/{m}/{d}'
+      for vid in os.listdir(os.path.join(dir, y, m, d)):
 
-      full_path = os.path.join(dir, y, m, vid)
+        full_path = os.path.join(dir, y, m, d, vid)
+        vidpath = os.path.join(y, m, d, vid)
+        if not summary.contains(db, vidpath):
+          full_name = vidpath
+          short_name = os.path.splitext(os.path.basename(vidpath))[0]
 
-      vidpath = os.path.join(y, m, vid)
-      if not summary.contains(db, vidpath):
-        full_name = vidpath
-        short_name = os.path.splitext(os.path.basename(vidpath))[0]
+          date = datetime.strptime(f'{y}{m}{d}', '%Y%m%d')
+          timestamp = int(time.mktime(date.timetuple()))
 
-        date = datetime.strptime('{}{}'.format(y, m), '%Y%m%d')
-        timestamp = int(time.mktime(date.timetuple()))
+          length = 0
+          vid = cv2.VideoCapture(full_path)
+          fps = vid.get(cv2.CAP_PROP_FPS)
+          if fps > 0:
+            frame_count = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+            length = int(math.floor(frame_count / fps))
 
-        length = 0
-        vid = cv2.VideoCapture(full_path)
-        fps = vid.get(cv2.CAP_PROP_FPS)
-        if fps > 0:
-          frame_count = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
-          length = int(math.floor(frame_count / fps))
+          size = os.path.getsize(full_path)
 
-        size = os.path.getsize(full_path)
-
-        summary.add(db, vidpath, short_name, timestamp, length, size)
+          summary.add(db, vidpath, short_name, timestamp, length, size)
 
 # Remove any files that no longer exist
 db_files = summary.get_all(db)
